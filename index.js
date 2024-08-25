@@ -1,35 +1,52 @@
 const express = require('express');
 const app = express();
-
 app.use(express.json());
+
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+    res.send('Welcome to the BFHL API');
+});
 
 app.post('/bfhl', (req, res) => {
     const { data } = req.body;
-    const user_id = "john_doe_17091999";
-    const email = "john@xyz.com";
-    const roll_number = "ABCD123";
 
-    const numbers = data.filter(item => !isNaN(item));
-    const alphabets = data.filter(item => /^[a-zA-Z]+$/.test(item));
-    const lowercaseAlphabets = alphabets.filter(item => /^[a-z]+$/.test(item));
-    const highestLowercaseAlphabet = lowercaseAlphabets.length > 0 ? [lowercaseAlphabets.sort().pop()] : [];
+    if (!data || !Array.isArray(data)) {
+        return res.status(400).json({ is_success: false, message: 'Invalid input' });
+    }
 
-    res.status(200).json({  
+    const numbers = [];
+    const alphabets = [];
+    let highestLowercaseAlphabet = '';
+
+    data.forEach(item => {
+        if (!isNaN(item)) {
+            numbers.push(item);
+        } else if (typeof item === 'string') {
+            alphabets.push(item);
+            if (item === item.toLowerCase() && item > highestLowercaseAlphabet) {
+                highestLowercaseAlphabet = item;
+            }
+        }
+    });
+
+    res.json({
         is_success: true,
-        user_id,
-        email,
-        roll_number,
-        numbers,
-        alphabets,
-        highest_lowercase_alphabet: highestLowercaseAlphabet
+        user_id: "Samarth", 
+        email: "samarthnag.com",
+        roll_number: "21fbt4",
+        numbers: numbers,
+        alphabets: alphabets,
+        highest_lowercase_alphabet: highestLowercaseAlphabet ? [highestLowercaseAlphabet] : []
     });
 });
 
 app.get('/bfhl', (req, res) => {
-    res.status(200).json({ "operation_code": 1 });
+    res.json({
+        operation_code: 1
+    });
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
+app.listen(PORT, () => {
+    console.log('Server is running on port ${PORT}');
 });
